@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍳 家庭菜单手账</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --paper:#fdf6e3;--paper-line:#e8dcc8;--ink:#5a4a3a;--ink-light:#8a7a6a;
+  --accent:#e07a5f;--accent2:#81b29a;--accent3:#f2cc8f;--accent4:#a8dadc;--accent5:#e5989b;
+  --tape-yellow:rgba(242,204,143,.55);--tape-pink:rgba(229,152,155,.5);
+  --tape-green:rgba(129,178,154,.5);--tape-blue:rgba(168,218,220,.5);
+  --shadow:2px 3px 8px rgba(90,74,58,.15);
+}
+body{
+  font-family:"楷体","KaiTi","STKaiti","Comic Sans MS","Segoe Print",cursive;
+  color:var(--ink);background:var(--paper);
+  background-image:repeating-linear-gradient(transparent,transparent 31px,var(--paper-line) 31px,var(--paper-line) 32px);
+  min-height:100vh;padding-bottom:60px;
+}
+body::before{content:"";position:fixed;left:55px;top:0;bottom:0;width:2px;background:rgba(224,122,95,.3);z-index:0}
+.header{position:relative;text-align:center;padding:35px 20px 20px;z-index:1}
+.header h1{font-size:2.4em;font-weight:bold;color:var(--ink);display:inline-block;position:relative;padding:0 15px;text-shadow:1px 1px 0 rgba(255,255,255,.5)}
+.header h1::before,.header h1::after{content:"✿";color:var(--accent);margin:0 8px;font-size:.7em;vertical-align:middle}
+.header .subtitle{font-size:.95em;color:var(--ink-light);margin-top:6px;letter-spacing:2px}
+.tape{position:absolute;width:120px;height:28px;top:18px;transform:rotate(-4deg);box-shadow:0 2px 4px rgba(0,0,0,.1);z-index:-1}
+.tape.t1{background:var(--tape-yellow);left:20%}
+.tape.t2{background:var(--tape-pink);right:20%;transform:rotate(3deg)}
+.tape.t3{background:var(--tape-green);left:50%;margin-left:-60px;top:80px;transform:rotate(-2deg);width:160px}
+.nav-tabs{display:flex;justify-content:center;gap:8px;margin:15px 0 25px;flex-wrap:wrap;padding:0 15px;position:relative;z-index:1}
+.nav-tab{padding:8px 22px;font-size:1.05em;font-family:inherit;cursor:pointer;border:2px dashed var(--ink-light);border-radius:20px 20px 4px 4px;background:rgba(255,255,255,.6);color:var(--ink-light);transition:all .25s;position:relative}
+.nav-tab:hover{background:rgba(255,255,255,.9);transform:translateY(-2px)}
+.nav-tab.active{background:var(--accent3);color:var(--ink);border-style:solid;border-color:var(--accent);font-weight:bold;transform:translateY(-2px);box-shadow:var(--shadow)}
+.nav-tab .emoji{margin-right:4px}
+.container{max-width:1100px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+.panel{display:none}.panel.active{display:block;animation:fadeIn .4s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.tag{display:inline-block;padding:2px 10px;border-radius:3px 10px 10px 3px;font-size:.8em;margin:2px 3px 2px 0;position:relative;color:#fff;font-weight:bold}
+.tag::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.7)}
+.tag-meat{background:var(--accent)}.tag-veg{background:var(--accent2)}.tag-fish{background:var(--accent4);color:var(--ink)}
+.tag-staple{background:var(--accent3);color:var(--ink)}.tag-soup{background:var(--accent5)}
+.tag-diff-1{background:#a8dadc;color:var(--ink)}.tag-diff-2{background:#f2cc8f;color:var(--ink)}.tag-diff-3{background:#e07a5f}
+.recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px}
+.recipe-card{background:#fffef8;border:2px solid var(--paper-line);border-radius:6px;overflow:hidden;position:relative;box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s;cursor:pointer}
+.recipe-card:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:4px 6px 14px rgba(90,74,58,.2)}
+.recipe-card:nth-child(3n){transform:rotate(.5deg)}
+.recipe-card:nth-child(3n):hover{transform:translateY(-4px) rotate(0deg)}
+.recipe-card::before{content:"";position:absolute;width:70px;height:22px;top:-10px;left:50%;margin-left:-35px;background:var(--tape-yellow);transform:rotate(-3deg);z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.recipe-card:nth-child(2n)::before{background:var(--tape-green);transform:rotate(2deg)}
+.recipe-card:nth-child(3n)::before{background:var(--tape-pink);transform:rotate(-1deg)}
+.recipe-img{width:100%;height:160px;object-fit:cover;display:block;border-bottom:2px dashed var(--paper-line)}
+.recipe-body{padding:12px 14px 14px}
+.recipe-name{font-size:1.2em;font-weight:bold;margin-bottom:6px;color:var(--ink)}
+.recipe-meta{margin-bottom:6px}
+.recipe-ingredients{font-size:.85em;color:var(--ink-light);line-height:1.5;margin-top:6px;max-height:3em;overflow:hidden}
+.recipe-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.btn{padding:5px 12px;font-size:.82em;font-family:inherit;cursor:pointer;border:1.5px solid var(--ink-light);border-radius:4px;background:rgba(255,255,255,.7);color:var(--ink);transition:all .2s}
+.btn:hover{background:var(--accent3);border-color:var(--accent)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:#c96148}
+.btn-danger{background:var(--accent5);color:#fff;border-color:var(--accent5)}.btn-danger:hover{background:#d4787b}
+.btn-success{background:var(--accent2);color:#fff;border-color:var(--accent2)}.btn-success:hover{background:#6a9a82}
+.btn-sm{padding:3px 8px;font-size:.78em}
+.toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.search-box{flex:1;min-width:200px;padding:8px 14px;font-family:inherit;font-size:1em;border:2px dashed var(--ink-light);border-radius:20px;background:rgba(255,255,255,.7);outline:none;color:var(--ink)}
+.search-box:focus{border-style:solid;border-color:var(--accent);background:#fff}
+.filter-select{padding:8px 12px;font-family:inherit;font-size:.95em;border:2px dashed var(--ink-light);border-radius:20px;background:rgba(255,255,255,.7);cursor:pointer;color:var(--ink);outline:none}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(90,74,58,.4);z-index:100;justify-content:center;align-items:flex-start;padding:40px 15px;overflow-y:auto}
+.modal-overlay.show{display:flex}
+.modal{background:var(--paper);background-image:repeating-linear-gradient(transparent,transparent 27px,var(--paper-line) 27px,var(--paper-line) 28px);border:3px solid var(--ink);border-radius:8px;padding:25px 30px;max-width:520px;width:100%;position:relative;box-shadow:6px 8px 20px rgba(0,0,0,.25);animation:popIn .3s}
+@keyframes popIn{from{transform:scale(.9) rotate(-2deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.modal::before{content:"";position:absolute;width:100px;height:26px;top:-12px;left:50%;margin-left:-50px;background:var(--tape-pink);transform:rotate(-2deg);box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.modal h2{text-align:center;font-size:1.5em;margin-bottom:18px;padding-bottom:8px;border-bottom:2px dashed var(--ink-light)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-weight:bold;margin-bottom:4px;font-size:.95em}
+.form-group label .req{color:var(--accent)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:7px 10px;font-family:inherit;font-size:.95em;border:1.5px solid var(--ink-light);border-radius:4px;background:rgba(255,255,255,.8);color:var(--ink);outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:60px}
+.form-row{display:flex;gap:12px}.form-row .form-group{flex:1}
+.modal-actions{display:flex;gap:10px;justify-content:center;margin-top:20px}
+.menu-header{text-align:center;margin-bottom:20px;position:relative}
+.menu-header h2{font-size:1.6em;display:inline-block;padding:5px 20px;background:var(--accent3);border-radius:4px;transform:rotate(-1deg);box-shadow:var(--shadow)}
+.menu-date{font-size:.9em;color:var(--ink-light);margin-top:8px}
+.menu-layout{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+@media(max-width:700px){.menu-layout{grid-template-columns:1fr}}
+.menu-section{background:#fffef8;border:2px solid var(--paper-line);border-radius:6px;padding:18px;position:relative;box-shadow:var(--shadow)}
+.menu-section::before{content:"";position:absolute;width:60px;height:20px;top:-9px;left:20px;background:var(--tape-blue);transform:rotate(-3deg)}
+.menu-section h3{font-size:1.2em;margin-bottom:12px;padding-bottom:6px;border-bottom:1.5px dashed var(--paper-line)}
+.menu-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dotted var(--paper-line)}
+.menu-item:last-child{border-bottom:none}
+.menu-item-img{width:50px;height:50px;object-fit:cover;border-radius:4px;border:1.5px solid var(--paper-line);flex-shrink:0}
+.menu-item-info{flex:1}
+.menu-item-name{font-weight:bold;font-size:1em}
+.menu-item-meta{font-size:.78em;color:var(--ink-light)}
+.menu-item .btn{flex-shrink:0}
+.empty-tip{text-align:center;color:var(--ink-light);padding:30px 10px;font-size:.95em}
+.empty-tip .big{font-size:2.5em;display:block;margin-bottom:8px}
+.pick-list{max-height:400px;overflow-y:auto;padding-right:5px}
+.pick-item{display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px dotted var(--paper-line);cursor:pointer;border-radius:4px;transition:background .2s}
+.pick-item:hover{background:rgba(242,204,143,.2)}
+.pick-item input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent);flex-shrink:0}
+.pick-item img{width:42px;height:42px;object-fit:cover;border-radius:4px;flex-shrink:0}
+.pick-item .info{flex:1;min-width:0}
+.pick-item .info .n{font-weight:bold;font-size:.95em}
+.pick-item .info .m{font-size:.75em;color:var(--ink-light)}
+.random-area{text-align:center;padding:30px 20px}
+.random-dice{font-size:4em;display:inline-block;cursor:pointer;transition:transform .3s;user-select:none}
+.random-dice:hover{transform:scale(1.1) rotate(10deg)}
+.random-dice.rolling{animation:roll .6s ease-in-out}
+@keyframes roll{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+.random-controls{margin:20px 0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+.random-controls label{font-weight:bold}
+.random-controls input{width:70px;padding:6px 10px;font-family:inherit;font-size:1em;text-align:center;border:2px dashed var(--ink-light);border-radius:8px;background:rgba(255,255,255,.7);outline:none}
+.random-result{margin-top:25px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px;justify-content:center}
+.random-card{background:#fffef8;border:2px solid var(--paper-line);border-radius:6px;overflow:hidden;box-shadow:var(--shadow);animation:popIn .4s;position:relative}
+.random-card::before{content:"";position:absolute;width:50px;height:18px;top:-8px;left:50%;margin-left:-25px;background:var(--tape-green);transform:rotate(-3deg)}
+.random-card img{width:100%;height:130px;object-fit:cover;display:block}
+.random-card .rc-body{padding:10px}
+.random-card .rc-name{font-weight:bold;font-size:1.05em;margin-bottom:4px}
+.share-bar{margin-top:20px;padding:15px;background:rgba(255,255,255,.6);border:2px dashed var(--ink-light);border-radius:8px;text-align:center}
+.share-bar p{margin-bottom:10px;font-size:.9em;color:var(--ink-light)}
+.share-link{display:flex;gap:8px;max-width:600px;margin:0 auto}
+.share-link input{flex:1;padding:7px 10px;font-family:inherit;font-size:.85em;border:1.5px solid var(--ink-light);border-radius:4px;background:#fff;color:var(--ink);outline:none}
+.toast{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 24px;border-radius:20px;font-size:.95em;z-index:200;box-shadow:var(--shadow);animation:toastIn .3s}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.share-view{max-width:700px;margin:0 auto;background:#fffef8;border:3px solid var(--ink);border-radius:10px;padding:30px;box-shadow:6px 8px 20px rgba(0,0,0,.2);position:relative}
+.share-view::before{content:"";position:absolute;width:140px;height:30px;top:-14px;left:50%;margin-left:-70px;background:var(--tape-yellow);transform:rotate(-2deg);box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.share-view h2{text-align:center;font-size:1.8em;margin-bottom:5px}
+.share-view .sv-sub{text-align:center;color:var(--ink-light);margin-bottom:20px;font-size:.9em}
+.share-dish{display:flex;gap:15px;padding:15px 0;border-bottom:2px dashed var(--paper-line);align-items:center}
+.share-dish:last-child{border-bottom:none}
+.share-dish img{width:90px;height:90px;object-fit:cover;border-radius:6px;border:2px solid var(--paper-line);flex-shrink:0}
+.share-dish .sd-info{flex:1}
+.share-dish .sd-name{font-size:1.2em;font-weight:bold;margin-bottom:4px}
+.share-dish .sd-meta{margin-bottom:4px}
+.share-dish .sd-ing{font-size:.85em;color:var(--ink-light);line-height:1.4}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--paper-line);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--ink-light)}
+.footer{text-align:center;margin-top:40px;padding:15px;color:var(--ink-light);font-size:.85em}
+.footer span{margin:0 5px}
+</style>
+</head>
+<body>
+<div id="shareView" class="container" style="display:none;margin-top:30px">
+  <div class="share-view">
+    <h2>🍽️ 今日家宴菜单</h2>
+    <p class="sv-sub">来自好友的手账搭配 · 共 <span id="shareCount">0</span> 道菜</p>
+    <div id="shareDishes"></div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="btn btn-primary" onclick="exitShareView()">📖 打开我的菜谱手账</button>
+    </div>
+  </div>
+</div>
+<div id="mainApp">
+<div class="header">
+  <div class="tape t1"></div><div class="tape t2"></div>
+  <h1>家庭菜单手账</h1>
+  <div class="subtitle">~ 今天吃什么？让手账告诉你 ~</div>
+  <div class="tape t3"></div>
+</div>
+<div class="nav-tabs">
+  <div class="nav-tab active" data-panel="library" onclick="switchPanel('library')"><span class="emoji">📚</span>菜谱库</div>
+  <div class="nav-tab" data-panel="today" onclick="switchPanel('today')"><span class="emoji">📋</span>今日菜单</div>
+  <div class="nav-tab" data-panel="random" onclick="switchPanel('random')"><span class="emoji">🎲</span>随机点菜</div>
+</div>
+<div class="container">
+  <div id="panel-library" class="panel active">
+    <div class="toolbar">
+      <input type="text" class="search-box" id="searchInput" placeholder="🔍 搜索菜名或食材..." oninput="renderRecipes()">
+      <select class="filter-select" id="categoryFilter" onchange="renderRecipes()">
+        <option value="">全部分类</option><option value="肉类">肉类</option><option value="素菜">素菜</option>
+        <option value="水产">水产</option><option value="主食">主食</option><option value="汤羹">汤羹</option>
+      </select>
+      <select class="filter-select" id="difficultyFilter" onchange="renderRecipes()">
+        <option value="">全部难度</option><option value="1">⭐ 简单</option><option value="2">⭐⭐ 中等</option><option value="3">⭐⭐⭐ 困难</option>
+      </select>
+      <button class="btn btn-primary" onclick="openAddModal()">➕ 添加菜谱</button>
+    </div>
+    <div class="recipe-grid" id="recipeGrid"></div>
+  </div>
+  <div id="panel-today" class="panel">
+    <div class="menu-header">
+      <h2>📋 今日菜单搭配</h2>
+      <div class="menu-date" id="menuDate"></div>
+    </div>
+    <div class="menu-layout">
+      <div class="menu-section">
+        <h3>🍳 从菜谱库勾选</h3>
+        <div class="pick-list" id="pickList"></div>
+      </div>
+      <div class="menu-section">
+        <h3>✨ 今日已选 (<span id="selectedCount">0</span>)</h3>
+        <div id="selectedList">
+          <div class="empty-tip"><span class="big">🍽️</span>还没有选菜哦<br>从左边勾选你喜欢的菜吧~</div>
+        </div>
+        <div class="share-bar">
+          <p>📤 把搭配好的菜单分享给家人朋友</p>
+          <div class="share-link">
+            <input type="text" id="shareUrl" readonly placeholder="选好菜后点击生成分享链接">
+            <button class="btn btn-success" onclick="generateShareLink()">生成链接</button>
+            <button class="btn" onclick="copyShareLink()">复制</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="panel-random" class="panel">
+    <div class="random-area">
+      <div class="random-dice" id="dice" onclick="rollRandom()">🎲</div>
+      <p style="font-size:1.1em;margin:10px 0">点击骰子，让命运决定今天吃什么！</p>
+      <div class="random-controls">
+        <label>随机选择</label>
+        <input type="number" id="randomCount" value="3" min="1" max="12">
+        <label>道菜</label>
+        <button class="btn btn-primary" onclick="rollRandom()">🎲 开始随机</button>
+        <button class="btn btn-success" onclick="addRandomToMenu()">加入今日菜单</button>
+      </div>
+      <div class="random-result" id="randomResult"></div>
+    </div>
+  </div>
+</div>
+<div class="footer"><span>✿</span> 家庭菜单手账 · 数据保存在本地浏览器 <span>✿</span></div>
+</div>
+<div class="modal-overlay" id="recipeModal">
+  <div class="modal">
+    <h2 id="modalTitle">✏️ 添加菜谱</h2>
+    <form id="recipeForm" onsubmit="saveRecipe(event)">
+      <input type="hidden" id="recipeId">
+      <div class="form-group"><label>菜名 <span class="req">*</span></label><input type="text" id="recipeName" required placeholder="例如：红烧肉"></div>
+      <div class="form-row">
+        <div class="form-group"><label>分类 <span class="req">*</span></label>
+          <select id="recipeCategory" required><option value="肉类">肉类</option><option value="素菜">素菜</option><option value="水产">水产</option><option value="主食">主食</option><option value="汤羹">汤羹</option></select>
+        </div>
+        <div class="form-group"><label>难度 <span class="req">*</span></label>
+          <select id="recipeDifficulty" required><option value="1">⭐ 简单</option><option value="2">⭐⭐ 中等</option><option value="3">⭐⭐⭐ 困难</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>食材 <span class="req">*</span></label><input type="text" id="recipeIngredients" required placeholder="用逗号分隔，例如：五花肉,冰糖,生抽,老抽"></div>
+      <div class="form-group"><label>图片URL</label><input type="text" id="recipeImage" placeholder="https://... （留空使用默认图）"></div>
+      <div class="form-group"><label>做法步骤</label><textarea id="recipeSteps" placeholder="简单记录一下做法...（可选）"></textarea></div>
+      <div class="modal-actions"><button type="button" class="btn" onclick="closeModal()">取消</button><button type="submit" class="btn btn-primary">💾 保存</button></div>
+    </form>
+  </div>
+</div>
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <h2 id="detailTitle">菜名</h2>
+    <div id="detailContent"></div>
+    <div class="modal-actions"><button class="btn" onclick="closeDetailModal()">关闭</button></div>
+  </div>
+</div>
+<script>
+const DEFAULT_RECIPES=[
+{id:"r1",name:"红烧肉",category:"肉类",difficulty:2,ingredients:"五花肉,冰糖,生抽,老抽,料酒,八角,桂皮,姜片,葱段",image:"https://p3-doubao-search-sign.byteimg.com/labis/image/dc96d8742e2c8b3cf4786ee20e67a232~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975578&x-signature=zsbzQLhG2%2FEMuZ%2F6ZH3bSwe1COA%3D",steps:"1.五花肉切块焯水\n2.冰糖炒糖色\n3.下肉翻炒上色\n4.加调料和水炖煮40分钟\n5.大火收汁"},
+{id:"r2",name:"番茄炒蛋",category:"素菜",difficulty:1,ingredients:"番茄,鸡蛋,葱花,盐,糖,食用油",image:"https://p3-doubao-search-sign.byteimg.com/labis/image/33af9b26d85f70e883bf0f909a2c4c12~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975580&x-signature=9WzdxD%2Bm17hItKVehOCy3Spru5k%3D",steps:"1.鸡蛋打散炒熟盛出\n2.番茄切块下锅炒出汁\n3.加少许糖和盐\n4.倒入鸡蛋翻炒均匀\n5.撒葱花出锅"},
+{id:"r3",name:"宫保鸡丁",category:"肉类",difficulty:2,ingredients:"鸡胸肉,花生米,干辣椒,花椒,葱白,蒜,生抽,醋,糖,淀粉",image:"https://p3-doubao-search-sign.byteimg.com/labis/image/644fbe340ef653fd12833b3be55303d8~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975581&x-signature=p1dj1ZLtmVXTxSPA5rHWJEfLAl0%3D",steps:"1.鸡肉切丁腌制\n2.调碗汁（生抽醋糖淀粉）\n3.热油爆香花椒干辣椒\n4.下鸡丁滑炒\n5.加葱白和碗汁翻炒\n6.最后加花生米"},
+{id:"r4",name:"麻婆豆腐",category:"素菜",difficulty:2,ingredients:"嫩豆腐,牛肉末,豆瓣酱,花椒粉,蒜末,葱花,生抽,淀粉",image:"https://p11-doubao-search-sign.byteimg.com/labis/image/97f3c11974310b238a6f672fd2b08a4f~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975594&x-signature=47EoGsTGEP27tXTGaQ8QKZ9sYNE%3D",steps:"1.豆腐切块焯水\n2.牛肉末炒香\n3.加豆瓣酱炒出红油\n4.加水下豆腐煮3分钟\n5.勾芡撒花椒粉葱花"},
+{id:"r5",name:"鱼香肉丝",category:"肉类",difficulty:2,ingredients:"猪里脊,木耳,胡萝卜,青椒,泡椒,蒜末,姜末,醋,糖,生抽",image:"https://p3-doubao-search-sign.byteimg.com/isp-i18n-media/image/76313200d96a4974bd64a510039e6315~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975596&x-signature=k3NLcCH58%2F1klz1Rb9xXktJZs28%3D",steps:"1.肉丝腌制上浆\n2.调鱼香汁（糖醋生抽淀粉）\n3.肉丝滑炒盛出\n4.爆香泡椒姜蒜\n5.下配菜和肉丝\n6.倒入鱼香汁翻炒"},
+{id:"r6",name:"糖醋里脊",category:"肉类",difficulty:3,ingredients:"猪里脊,番茄酱,白醋,糖,淀粉,面粉,鸡蛋,料酒,盐",image:"https://p11-doubao-search-sign.byteimg.com/labis/image/983d456ef3dc479f7a18cb52b10f0615~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975598&x-signature=kyiQHGRbphrOLL4wR%2BBCpAM8Go0%3D",steps:"1.里脊切条腌制\n2.裹淀粉糊\n3.六成热油炸至金黄\n4.复炸一次更酥脆\n5.调糖醋汁熬浓稠\n6.倒入里脊快速裹匀"},
+{id:"r7",name:"可乐鸡翅",category:"肉类",difficulty:1,ingredients:"鸡翅中,可乐,生抽,老抽,姜片,葱段,料酒,盐",image:"https://p11-doubao-search-sign.byteimg.com/labis/image/8ed53d31a0046a5c5fda981f59605211~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975606&x-signature=pDfDYo0DeN1oksSRHiJZXp5igkI%3D",steps:"1.鸡翅两面划刀焯水\n2.煎至两面金黄\n3.加姜片葱段料酒\n4.倒入可乐没过鸡翅\n5.加生抽老抽调色\n6.大火收汁即可"},
+{id:"r8",name:"蒜蓉西兰花",category:"素菜",difficulty:1,ingredients:"西兰花,大蒜,盐,蚝油,食用油",image:"https://p26-doubao-search-sign.byteimg.com/labis/image/dc5abdfe8e451435193e81ffb23c9d32~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975607&x-signature=0X4cZseFBwZp2zZbn7P7MhGHAF8%3D",steps:"1.西兰花掰小朵盐水浸泡\n2.焯水30秒捞出\n3.热油爆香蒜末\n4.下西兰花翻炒\n5.加盐和少许蚝油调味"},
+{id:"r9",name:"酸辣土豆丝",category:"素菜",difficulty:1,ingredients:"土豆,干辣椒,花椒,醋,盐,葱花,蒜",image:"https://p26-doubao-search-sign.byteimg.com/tos-cn-i-be4g95zd3a/1370149964001574920~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975609&x-signature=JDwrHceD8M9qfquRjCC703IYrQU%3D",steps:"1.土豆切丝泡水去淀粉\n2.热油爆香花椒干辣椒\n3.下土豆丝大火快炒\n4.加醋和盐调味\n5.撒葱花蒜末出锅"},
+{id:"r10",name:"红烧排骨",category:"肉类",difficulty:2,ingredients:"猪排骨,冰糖,生抽,老抽,料酒,八角,姜片,葱段",image:"https://p11-doubao-search-sign.byteimg.com/labis/image/30259190483e014e8d8313314c9a3c1e~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975615&x-signature=MBdBzlNGgX%2FjtSm3eOBOpwpE%2B84%3D",steps:"1.排骨焯水洗净\n2.冰糖炒糖色\n3.下排骨翻炒上色\n4.加调料和热水\n5.炖煮45分钟\n6.大火收汁"},
+{id:"r11",name:"水煮鱼",category:"水产",difficulty:3,ingredients:"草鱼,豆芽,干辣椒,花椒,豆瓣酱,蒜末,姜末,蛋清,淀粉,香菜",image:"https://p26-doubao-search-sign.byteimg.com/labis/image/1b2989ae244ad70c3b3917586b7019e9~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975617&x-signature=KFov%2F0HJdJQjnZDIHwK%2BCtHIJp4%3D",steps:"1.鱼片腌制（蛋清淀粉盐）\n2.豆芽焯水铺底\n3.炒香豆瓣酱姜蒜\n4.加水煮开下鱼片\n5.煮熟连汤倒入碗中\n6.撒干辣椒花椒蒜末\n7.浇热油激香"},
+{id:"r12",name:"蛋炒饭",category:"主食",difficulty:1,ingredients:"米饭,鸡蛋,葱花,火腿丁,豌豆,胡萝卜丁,盐,生抽",image:"https://p11-doubao-search-sign.byteimg.com/labis/image/2ae8532e9e3c2a5ab6c4fcf30cf91bd6~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1801975619&x-signature=Q750v6gNjpX%2Bo8gfroKgWVo%2F37k%3D",steps:"1.鸡蛋打散\n2.热油炒蛋盛出\n3.下配菜丁翻炒\n4.倒入米饭炒散\n5.加鸡蛋和调料\n6.撒葱花翻炒均匀"}
+];
+const STORAGE_KEY="family_menu_recipes",SELECTED_KEY="family_menu_selected";
+function loadRecipes(){try{const d=localStorage.getItem(STORAGE_KEY);if(d)return JSON.parse(d)}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_RECIPES))}
+function saveRecipes(l){localStorage.setItem(STORAGE_KEY,JSON.stringify(l))}
+function loadSelected(){try{const d=localStorage.getItem(SELECTED_KEY);if(d)return JSON.parse(d)}catch(e){}return[]}
+function saveSelected(i){localStorage.setItem(SELECTED_KEY,JSON.stringify(i))}
+let recipes=loadRecipes(),selectedIds=loadSelected(),lastRandomIds=[];
+function categoryTag(c){const m={"肉类":"tag-meat","素菜":"tag-veg","水产":"tag-fish","主食":"tag-staple","汤羹":"tag-soup"};return `<span class="tag ${m[c]||'tag-meat'}">${c}</span>`}
+function diffTag(d){return `<span class="tag tag-diff-${d}">${"⭐".repeat(parseInt(d))}</span>`}
+function defaultImg(){return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='160'%3E%3Crect fill='%23f2cc8f' width='260' height='160'/%3E%3Ctext x='50%25' y='50%25' font-size='48' text-anchor='middle' dy='.3em'%3E🍽️%3C/text%3E%3C/svg%3E"}
+function renderRecipes(){
+  const grid=document.getElementById("recipeGrid");
+  const kw=document.getElementById("searchInput").value.trim().toLowerCase();
+  const cat=document.getElementById("categoryFilter").value;
+  const diff=document.getElementById("difficultyFilter").value;
+  let list=recipes.filter(r=>{if(cat&&r.category!==cat)return false;if(diff&&String(r.difficulty)!==diff)return false;if(kw){const t=(r.name+r.ingredients).toLowerCase();if(!t.includes(kw))return false}return true});
+  if(list.length===0){grid.innerHTML=`<div class="empty-tip" style="grid-column:1/-1"><span class="big">🔍</span>没有找到匹配的菜谱<br>换个关键词试试吧~</div>`;return}
+  grid.innerHTML=list.map(r=>`<div class="recipe-card" onclick="showDetail('${r.id}')"><img class="recipe-img" src="${r.image||defaultImg()}" alt="${r.name}" onerror="this.src='${defaultImg()}'"><div class="recipe-body"><div class="recipe-name">${r.name}</div><div class="recipe-meta">${categoryTag(r.category)} ${diffTag(r.difficulty)}</div><div class="recipe-ingredients">🥬 ${r.ingredients}</div><div class="recipe-actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-success" onclick="toggleSelect('${r.id}')">${selectedIds.includes(r.id)?'✅ 已选':'➕ 选菜'}</button><button class="btn btn-sm" onclick="openEditModal('${r.id}')">✏️ 编辑</button><button class="btn btn-sm btn-danger" onclick="deleteRecipe('${r.id}')">🗑️ 删除</button></div></div></div>`).join("");
+}
+function showDetail(id){
+  const r=recipes.find(x=>x.id===id);if(!r)return;
+  document.getElementById("detailTitle").textContent="🍽️ "+r.name;
+  document.getElementById("detailContent").innerHTML=`<img src="${r.image||defaultImg()}" style="width:100%;max-height:220px;object-fit:cover;border-radius:6px;margin-bottom:12px;border:2px solid var(--paper-line)" onerror="this.src='${defaultImg()}'"><div style="margin-bottom:10px">${categoryTag(r.category)} ${diffTag(r.difficulty)}</div><div style="margin-bottom:10px"><b>🥬 食材：</b>${r.ingredients}</div>${r.steps?`<div style="margin-bottom:10px"><b>📝 做法：</b><div style="white-space:pre-line;margin-top:5px;line-height:1.7;color:var(--ink)">${r.steps}</div></div>`:""}`;
+  document.getElementById("detailModal").classList.add("show");
+}
+function closeDetailModal(){document.getElementById("detailModal").classList.remove("show")}
+function openAddModal(){document.getElementById("modalTitle").textContent="✏️ 添加菜谱";document.getElementById("recipeForm").reset();document.getElementById("recipeId").value="";document.getElementById("recipeModal").classList.add("show")}
+function openEditModal(id){
+  const r=recipes.find(x=>x.id===id);if(!r)return;
+  document.getElementById("modalTitle").textContent="✏️ 编辑菜谱";
+  document.getElementById("recipeId").value=r.id;document.getElementById("recipeName").value=r.name;
+  document.getElementById("recipeCategory").value=r.category;document.getElementById("recipeDifficulty").value=r.difficulty;
+  document.getElementById("recipeIngredients").value=r.ingredients;document.getElementById("recipeImage").value=r.image||"";
+  document.getElementById("recipeSteps").value=r.steps||"";document.getElementById("recipeModal").classList.add("show");
+}
+function closeModal(){document.getElementById("recipeModal").classList.remove("show")}
+function saveRecipe(e){
+  e.preventDefault();
+  const id=document.getElementById("recipeId").value;
+  const data={name:document.getElementById("recipeName").value.trim(),category:document.getElementById("recipeCategory").value,difficulty:parseInt(document.getElementById("recipeDifficulty").value),ingredients:document.getElementById("recipeIngredients").value.trim(),image:document.getElementById("recipeImage").value.trim(),steps:document.getElementById("recipeSteps").value.trim()};
+  if(id){const idx=recipes.findIndex(x=>x.id===id);if(idx>-1)recipes[idx]={...recipes[idx],...data}}else{data.id="r"+Date.now();recipes.push(data)}
+  saveRecipes(recipes);closeModal();renderRecipes();renderPickList();toast(id?"菜谱已更新 ✨":"菜谱已添加 🎉");
+}
+function deleteRecipe(id){if(!confirm("确定要删除这道菜吗？"))return;recipes=recipes.filter(x=>x.id!==id);selectedIds=selectedIds.filter(x=>x!==id);saveRecipes(recipes);saveSelected(selectedIds);renderRecipes();renderPickList();renderSelected();toast("已删除 🗑️")}
+function toggleSelect(id){const idx=selectedIds.indexOf(id);if(idx>-1)selectedIds.splice(idx,1);else selectedIds.push(id);saveSelected(selectedIds);renderRecipes();renderSelected();renderPickList()}
+function renderPickList(){
+  const list=document.getElementById("pickList");
+  if(recipes.length===0){list.innerHTML=`<div class="empty-tip"><span class="big">📭</span>菜谱库是空的<br>先去添加一些菜谱吧</div>`;return}
+  list.innerHTML=recipes.map(r=>`<div class="pick-item" onclick="toggleSelect('${r.id}')"><input type="checkbox" ${selectedIds.includes(r.id)?"checked":""} onclick="event.stopPropagation();toggleSelect('${r.id}')"><img src="${r.image||defaultImg()}" onerror="this.src='${defaultImg()}'"><div class="info"><div class="n">${r.name}</div><div class="m">${r.category} · ${"⭐".repeat(r.difficulty)}</div></div></div>`).join("");
+}
+function renderSelected(){
+  const box=document.getElementById("selectedList");
+  document.getElementById("selectedCount").textContent=selectedIds.length;
+  if(selectedIds.length===0){box.innerHTML=`<div class="empty-tip"><span class="big">🍽️</span>还没有选菜哦<br>从左边勾选你喜欢的菜吧~</div>`;return}
+  const items=selectedIds.map(id=>recipes.find(r=>r.id===id)).filter(Boolean);
+  box.innerHTML=items.map(r=>`<div class="menu-item"><img class="menu-item-img" src="${r.image||defaultImg()}" onerror="this.src='${defaultImg()}'"><div class="menu-item-info"><div class="menu-item-name">${r.name}</div><div class="menu-item-meta">${r.category} · ${"⭐".repeat(r.difficulty)} · ${r.ingredients.split(",").slice(0,3).join("、")}${r.ingredients.split(",").length>3?"...":""}</div></div><button class="btn btn-sm btn-danger" onclick="toggleSelect('${r.id}')">移除</button></div>`).join("");
+}
+function rollRandom(){
+  const n=Math.min(parseInt(document.getElementById("randomCount").value)||3,recipes.length);
+  if(recipes.length===0){toast("菜谱库是空的！");return}
+  const dice=document.getElementById("dice");dice.classList.remove("rolling");void dice.offsetWidth;dice.classList.add("rolling");
+  const shuffled=[...recipes].sort(()=>Math.random()-0.5);
+  lastRandomIds=shuffled.slice(0,n).map(r=>r.id);
+  setTimeout(()=>{document.getElementById("randomResult").innerHTML=shuffled.slice(0,n).map(r=>`<div class="random-card"><img src="${r.image||defaultImg()}" onerror="this.src='${defaultImg()}'"><div class="rc-body"><div class="rc-name">${r.name}</div><div>${categoryTag(r.category)} ${diffTag(r.difficulty)}</div></div></div>`).join("")},300);
+}
+function addRandomToMenu(){if(lastRandomIds.length===0){toast("先随机点菜吧！");return}lastRandomIds.forEach(id=>{if(!selectedIds.includes(id))selectedIds.push(id)});saveSelected(selectedIds);renderSelected();renderPickList();renderRecipes();toast(`已加入 ${lastRandomIds.length} 道菜到今日菜单 🎉`);switchPanel("today")}
+function generateShareLink(){
+  if(selectedIds.length===0){toast("请先选择菜品！");return}
+  const dishes=selectedIds.map(id=>{const r=recipes.find(x=>x.id===id);return r?{n:r.name,c:r.category,d:r.difficulty,i:r.ingredients,img:r.image||"",s:r.steps||""}:null}).filter(Boolean);
+  const encoded=btoa(encodeURIComponent(JSON.stringify(dishes)));
+  const url=window.location.origin+window.location.pathname+"#menu="+encoded;
+  document.getElementById("shareUrl").value=url;toast("分享链接已生成 ✨");
+}
+function copyShareLink(){const input=document.getElementById("shareUrl");if(!input.value){toast("请先生成分享链接！");return}input.select();try{document.execCommand("copy");toast("链接已复制到剪贴板 📋")}catch(e){toast("复制失败，请手动复制")}}
+function checkShareLink(){
+  const hash=window.location.hash;
+  if(hash.startsWith("#menu=")){
+    const encoded=hash.substring(6);
+    try{const dishes=JSON.parse(decodeURIComponent(atob(encoded)));if(Array.isArray(dishes)&&dishes.length>0){showShareView(dishes);return true}}catch(e){}
+  }
+  return false;
+}
+function showShareView(dishes){
+  document.getElementById("mainApp").style.display="none";document.getElementById("shareView").style.display="block";
+  document.getElementById("shareCount").textContent=dishes.length;
+  document.getElementById("shareDishes").innerHTML=dishes.map((d,i)=>`<div class="share-dish"><img src="${d.img||defaultImg()}" onerror="this.src='${defaultImg()}'"><div class="sd-info"><div class="sd-name">${i+1}. ${d.n}</div><div class="sd-meta">${categoryTag(d.c)} ${diffTag(d.d)}</div><div class="sd-ing">🥬 ${d.i}</div>${d.s?`<div class="sd-ing" style="margin-top:4px">📝 ${d.s.substring(0,60)}${d.s.length>60?"...":""}</div>`:""}</div></div>`).join("");
+}
+function exitShareView(){window.location.hash="";document.getElementById("shareView").style.display="none";document.getElementById("mainApp").style.display="block"}
+function switchPanel(name){document.querySelectorAll(".nav-tab").forEach(t=>{t.classList.toggle("active",t.dataset.panel===name)});document.querySelectorAll(".panel").forEach(p=>{p.classList.toggle("active",p.id==="panel-"+name)});if(name==="today"){renderPickList();renderSelected()}}
+let toastTimer;
+function toast(msg){const old=document.querySelector(".toast");if(old)old.remove();const el=document.createElement("div");el.className="toast";el.textContent=msg;document.body.appendChild(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),2200)}
+function updateDate(){const now=new Date();const weeks=["日","一","二","三","四","五","六"];document.getElementById("menuDate").textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · 星期${weeks[now.getDay()]}`}
+function init(){
+  if(checkShareLink())return;
+  updateDate();renderRecipes();renderPickList();renderSelected();
+  document.getElementById("recipeModal").addEventListener("click",e=>{if(e.target.id==="recipeModal")closeModal()});
+  document.getElementById("detailModal").addEventListener("click",e=>{if(e.target.id==="detailModal")closeDetailModal()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeDetailModal()}});
+}
+init();
+</script>
+</body>
+</html>
